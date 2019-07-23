@@ -33,9 +33,7 @@ d3.csv("../data/dadosAnderson.csv", function(d) {
         const g2 = scenarioData[k].data.map(d => d["tempo"]);
 
         console.log(
-          `comparando ambiente ${scenarioData[i].ambiente} com ${
-            scenarioData[k].ambiente
-          } na tarefa ${tarefa}`
+          `comparando ambiente ${scenarioData[i].ambiente} com ${scenarioData[k].ambiente} na tarefa ${tarefa}`
         );
         console.log(`media ${scenarioData[i].ambiente}: ${d3.mean(g1)}`);
         console.log(`media ${scenarioData[k].ambiente}: ${d3.mean(g2)}`);
@@ -43,7 +41,7 @@ d3.csv("../data/dadosAnderson.csv", function(d) {
         console.log(pair);
 
         let bootvalues = [];
-        for (let b = 0; b <= 20000; b++) {
+        for (let b = 0; b <= 100; b++) {
           const n_samples = Math.min(g1.length, g2.length);
           const values1 = new Array(n_samples)
             .fill(0)
