@@ -1,0 +1,12 @@
+{
+  "name": "pairwise-comparison-vis",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/rodrigodivino/pairwise-comparison-vis",
+  "author": "Rodrigo Divino <rodrigo.sad.lima@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^6.1.0",
+    "prettier": "^1.18.2"
+  }
+}
