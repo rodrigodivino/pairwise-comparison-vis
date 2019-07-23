@@ -1,4 +1,4 @@
-import { cleanData } from "./utils.js";
+import { cleanData, bootComparison } from "./utils.js";
 /* global d3 */
 
 d3.csv("../data/dadosAnderson.csv", cleanData).then(data => {
@@ -66,6 +66,16 @@ d3.csv("../data/dadosAnderson.csv", cleanData).then(data => {
     .attr("height", comparisonContainerHeight)
     .attr("fill", "none")
     .attr("stroke", "black");
+
+  comparisonContainer.each(function({ term1, term2 }) {
+    const arr1 = term1.map(d => d["duration"]);
+    const arr2 = term2.map(d => d["duration"]);
+
+    const comp = bootComparison(arr1, arr2);
+    d3.select(this).attr("meanDiff", comp.mean);
+    d3.select(this).attr("lowerCI", comp.ci[0]);
+    d3.select(this).attr("upperCI", comp.ci[1]);
+  });
   /*
   const hierarchy = aggregate(data, "task").sort();
   console.log(hierarchy);

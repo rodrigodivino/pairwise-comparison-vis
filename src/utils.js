@@ -40,6 +40,22 @@ function getCI(arr) {
   return [d3.quantile(means, 0.025), d3.quantile(means, 0.975)];
 }
 
+function bootComparison(term1, term2) {
+  const meansDiff = [];
+  for (let i = 0; i < 20000; i++) {
+    const r1 = resample(term1);
+    const r2 = resample(term2);
+    const mean1 = d3.mean(r1);
+    const mean2 = d3.mean(r2);
+    meansDiff.push(mean1 - mean2);
+  }
+  meansDiff.sort(d3.ascending);
+  return {
+    mean: d3.mean(meansDiff),
+    ci: [d3.quantile(meansDiff, 0.025), d3.quantile(meansDiff, 0.975)]
+  };
+}
+
 window.getCI = getCI;
 
-export { cleanData, sortByBool, getCI };
+export { cleanData, sortByBool, getCI, bootComparison };
