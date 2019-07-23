@@ -2,7 +2,6 @@ import { cleanData, bootComparison, getPooledStd } from "./utils.js";
 /* global d3 */
 
 d3.csv("../data/dadosAnderson.csv", cleanData).then(data => {
-  console.log(data);
   const width = 400;
   const height = 2000;
   const margin = { top: 10, left: 10, right: 10, bottom: 10 };
@@ -118,7 +117,33 @@ d3.csv("../data/dadosAnderson.csv", cleanData).then(data => {
           .classed("nosizeright", true)
           .attr("x", x(0))
           .attr("width", () => {
-            console.log(pooledStd);
+            if (x(0.2 * pooledStd) - x(0) < 0) {
+              return 0;
+            } else if (x(0.2 * pooledStd) > comparisonContainerWidth) {
+              return comparisonContainerWidth - x(0);
+            } else {
+              return x(0.2 * pooledStd) - x(0);
+            }
+          })
+          .attr("height", comparisonContainerHeight / 2)
+          .attr("y", comparisonContainerHeight / 4)
+          .attr("fill", d3.schemeYlGnBu[4][0])
+          .attr("pooled", d => d.pooledStd)
+          .attr("diff", d => d.trueMeanDiff);
+
+        comparisonContainer
+          .append("rect")
+          .classed("nosizeleft", true)
+          .attr("x", () => {
+            if (x(0.2 * pooledStd) - x(0) < 0) {
+              return x(0) - 0;
+            } else if (x(0.2 * pooledStd) > comparisonContainerWidth) {
+              return x(0) - (comparisonContainerWidth - x(0));
+            } else {
+              return x(0) - (x(0.2 * pooledStd) - x(0));
+            }
+          })
+          .attr("width", () => {
             if (x(0.2 * pooledStd) - x(0) < 0) {
               return 0;
             } else if (x(0.2 * pooledStd) > comparisonContainerWidth) {
@@ -138,7 +163,39 @@ d3.csv("../data/dadosAnderson.csv", cleanData).then(data => {
           .classed("smallsizeright", true)
           .attr("x", x(0.2 * pooledStd) - 1)
           .attr("width", () => {
-            console.log(pooledStd);
+            if (x(0.5 * pooledStd) - x(0.2 * pooledStd) < 0) {
+              return 0;
+            } else if (x(0.5 * pooledStd) > comparisonContainerWidth) {
+              return comparisonContainerWidth - x(0.2 * pooledStd);
+            } else {
+              return x(0.5 * pooledStd) - x(0.2 * pooledStd);
+            }
+          })
+          .attr("height", comparisonContainerHeight / 2)
+          .attr("y", comparisonContainerHeight / 4)
+          .attr("fill", d3.schemeYlGnBu[4][1])
+          .attr("pooled", d => d.pooledStd)
+          .attr("diff", d => d.trueMeanDiff);
+
+        comparisonContainer
+          .append("rect")
+          .classed("smallsizeleft", true)
+          .attr("x", () => {
+            if (x(0.5 * pooledStd) - x(0.2 * pooledStd) < 0) {
+              return x(-(0.2 * pooledStd)) - 0;
+            } else if (x(0.5 * pooledStd) > comparisonContainerWidth) {
+              return (
+                x(-(0.2 * pooledStd)) -
+                (comparisonContainerWidth - x(0.2 * pooledStd))
+              );
+            } else {
+              return (
+                x(-(0.2 * pooledStd)) -
+                (x(0.5 * pooledStd) - x(0.2 * pooledStd))
+              );
+            }
+          })
+          .attr("width", () => {
             if (x(0.5 * pooledStd) - x(0.2 * pooledStd) < 0) {
               return 0;
             } else if (x(0.5 * pooledStd) > comparisonContainerWidth) {
@@ -158,7 +215,39 @@ d3.csv("../data/dadosAnderson.csv", cleanData).then(data => {
           .classed("mediumsizeright", true)
           .attr("x", x(0.5 * pooledStd) - 1)
           .attr("width", () => {
-            console.log(pooledStd);
+            if (x(0.8 * pooledStd) - x(0.5 * pooledStd) < 0) {
+              return 0;
+            } else if (x(0.8 * pooledStd) > comparisonContainerWidth) {
+              return comparisonContainerWidth - x(0.5 * pooledStd);
+            } else {
+              return x(0.8 * pooledStd) - x(0.5 * pooledStd);
+            }
+          })
+          .attr("height", comparisonContainerHeight / 2)
+          .attr("y", comparisonContainerHeight / 4)
+          .attr("fill", d3.schemeYlGnBu[4][2])
+          .attr("pooled", d => d.pooledStd)
+          .attr("diff", d => d.trueMeanDiff);
+
+        comparisonContainer
+          .append("rect")
+          .classed("mediumsizeleft", true)
+          .attr("x", () => {
+            if (x(0.8 * pooledStd) - x(0.5 * pooledStd) < 0) {
+              return x(-(0.5 * pooledStd)) - 0;
+            } else if (x(0.8 * pooledStd) > comparisonContainerWidth) {
+              return (
+                x(-(0.5 * pooledStd)) -
+                (comparisonContainerWidth - x(0.5 * pooledStd))
+              );
+            } else {
+              return (
+                x(-(0.5 * pooledStd)) -
+                (x(0.8 * pooledStd) - x(0.5 * pooledStd))
+              );
+            }
+          })
+          .attr("width", () => {
             if (x(0.8 * pooledStd) - x(0.5 * pooledStd) < 0) {
               return 0;
             } else if (x(0.8 * pooledStd) > comparisonContainerWidth) {
@@ -178,7 +267,32 @@ d3.csv("../data/dadosAnderson.csv", cleanData).then(data => {
           .classed("largesizeright", true)
           .attr("x", x(0.8 * pooledStd) - 1)
           .attr("width", () => {
-            console.log(pooledStd);
+            if (comparisonContainerWidth - x(0.8 * pooledStd) < 0) {
+              return 0;
+            } else {
+              return comparisonContainerWidth - x(0.8 * pooledStd);
+            }
+          })
+          .attr("height", comparisonContainerHeight / 2)
+          .attr("y", comparisonContainerHeight / 4)
+          .attr("fill", d3.schemeYlGnBu[4][3])
+          .attr("pooled", d => d.pooledStd)
+          .attr("diff", d => d.trueMeanDiff);
+
+        comparisonContainer
+          .append("rect")
+          .classed("largesizeleft", true)
+          .attr("x", () => {
+            if (comparisonContainerWidth - x(0.8 * pooledStd) < 0) {
+              return x(-(0.8 * pooledStd)) - 0;
+            } else {
+              return (
+                x(-(0.8 * pooledStd)) -
+                (comparisonContainerWidth - x(0.8 * pooledStd))
+              );
+            }
+          })
+          .attr("width", () => {
             if (comparisonContainerWidth - x(0.8 * pooledStd) < 0) {
               return 0;
             } else {
@@ -199,8 +313,10 @@ d3.csv("../data/dadosAnderson.csv", cleanData).then(data => {
 
         g.each(function({ lowerCI, upperCI }) {
           const rect = d3.select(this).append("rect");
+          const blocker1 = d3.select(this).append("rect");
+          const blocker2 = d3.select(this).append("rect");
           const text = d3.select(this).append("text");
-          const xPos = lowerCI < 0 ? 0 : x(lowerCI);
+          const xPos = x(lowerCI) < 0 ? 0 : x(lowerCI);
           const rectWidth =
             x(upperCI) > comparisonContainerWidth
               ? comparisonContainerWidth - xPos
@@ -215,6 +331,57 @@ d3.csv("../data/dadosAnderson.csv", cleanData).then(data => {
             .attr("width", rectWidth)
             .attr("height", comparisonContainerHeight);
 
+          blocker1
+            .attr("fill", "white")
+            .attr("stroke", "none")
+            .attr("height", comparisonContainerHeight)
+            .attr("x", function() {
+              if (Math.sign(upperCI) !== Math.sign(lowerCI)) {
+                return x(upperCI);
+              } else if (upperCI < 0) {
+                return x(0);
+              } else {
+                return x(upperCI);
+              }
+            })
+            .attr("width", function() {
+              if (Math.sign(upperCI) !== Math.sign(lowerCI)) {
+                const width = comparisonContainerWidth - x(upperCI);
+                return width < 0 ? 0 : width;
+              } else if (upperCI < 0) {
+                return comparisonContainerWidth - x(0);
+              } else {
+                const width = comparisonContainerWidth - x(upperCI);
+                return width > 0 ? width : 0;
+              }
+            });
+
+          blocker2
+            .attr("fill", "white")
+            .attr("stroke", "none")
+            .classed("blocker2", true)
+            .attr("height", comparisonContainerHeight)
+            .attr("x", function() {
+              if (Math.sign(upperCI) !== Math.sign(lowerCI)) {
+                return 0;
+              } else if (lowerCI > 0) {
+                return 0;
+              } else {
+                return 0;
+              }
+            })
+            .attr("width", function() {
+              if (Math.sign(upperCI) !== Math.sign(lowerCI)) {
+                const width = x(lowerCI) < 0 ? 0 : x(lowerCI);
+                console.log(width);
+                return width < 0 ? 0 : width;
+              } else if (lowerCI > 0) {
+                return x(0);
+              } else {
+                return x(lowerCI);
+              }
+            });
+
           text
             .attr("x", xPos + rectWidth / 2)
             .attr("y", comparisonContainerHeight / 2)
@@ -223,7 +390,6 @@ d3.csv("../data/dadosAnderson.csv", cleanData).then(data => {
             .text(tag);
         });
       });
-    console.log(means);
   });
 
   /*
