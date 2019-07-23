@@ -56,6 +56,12 @@ function bootComparison(term1, term2) {
   };
 }
 
+function getPooledStd(arr1, arr2) {
+  const std1 = d3.deviation(arr1);
+  const std2 = d3.deviation(arr2);
+  return Math.sqrt((std1 * std1 + std2 * std2) / 2);
+}
+
 window.getCI = getCI;
 
-export { cleanData, sortByBool, getCI, bootComparison };
+export { cleanData, sortByBool, getCI, bootComparison, getPooledStd };

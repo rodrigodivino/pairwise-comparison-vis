@@ -1,10 +1,10 @@
-import { cleanData, bootComparison } from "./utils.js";
+import { cleanData, bootComparison, getPooledStd } from "./utils.js";
 /* global d3 */
 
 d3.csv("../data/dadosAnderson.csv", cleanData).then(data => {
   console.log(data);
-  const width = 300;
-  const height = 1000;
+  const width = 400;
+  const height = 2000;
   const margin = { top: 10, left: 10, right: 10, bottom: 10 };
   const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
@@ -104,31 +104,124 @@ d3.csv("../data/dadosAnderson.csv", cleanData).then(data => {
     rootContainer
       .selectAll("g.comparisonContainer")
       .each(function({ term1, term2 }) {
+        const arr1 = term1.map(d => d["duration"]);
+        const arr2 = term2.map(d => d["duration"]);
         const comparisonContainer = d3.select(this);
         const mean = parseFloat(comparisonContainer.attr("meanDiff"));
         const lowerCI = parseFloat(comparisonContainer.attr("lowerCI"));
         const upperCI = parseFloat(comparisonContainer.attr("upperCI"));
 
+        const pooledStd = getPooledStd(arr1, arr2);
+
         comparisonContainer
-          .selectAll("rect.ci")
+          .append("rect")
+          .classed("nosizeright", true)
+          .attr("x", x(0))
+          .attr("width", () => {
+            console.log(pooledStd);
+            if (x(0.2 * pooledStd) - x(0) < 0) {
+              return 0;
+            } else if (x(0.2 * pooledStd) > comparisonContainerWidth) {
+              return comparisonContainerWidth - x(0);
+            } else {
+              return x(0.2 * pooledStd) - x(0);
+            }
+          })
+          .attr("height", comparisonContainerHeight / 2)
+          .attr("y", comparisonContainerHeight / 4)
+          .attr("fill", d3.schemeYlGnBu[4][0])
+          .attr("pooled", d => d.pooledStd)
+          .attr("diff", d => d.trueMeanDiff);
+
+        comparisonContainer
+          .append("rect")
+          .classed("smallsizeright", true)
+          .attr("x", x(0.2 * pooledStd) - 1)
+          .attr("width", () => {
+            console.log(pooledStd);
+            if (x(0.5 * pooledStd) - x(0.2 * pooledStd) < 0) {
+              return 0;
+            } else if (x(0.5 * pooledStd) > comparisonContainerWidth) {
+              return comparisonContainerWidth - x(0.2 * pooledStd);
+            } else {
+              return x(0.5 * pooledStd) - x(0.2 * pooledStd);
+            }
+          })
+          .attr("height", comparisonContainerHeight / 2)
+          .attr("y", comparisonContainerHeight / 4)
+          .attr("fill", d3.schemeYlGnBu[4][1])
+          .attr("pooled", d => d.pooledStd)
+          .attr("diff", d => d.trueMeanDiff);
+
+        comparisonContainer
+          .append("rect")
+          .classed("mediumsizeright", true)
+          .attr("x", x(0.5 * pooledStd) - 1)
+          .attr("width", () => {
+            console.log(pooledStd);
+            if (x(0.8 * pooledStd) - x(0.5 * pooledStd) < 0) {
+              return 0;
+            } else if (x(0.8 * pooledStd) > comparisonContainerWidth) {
+              return comparisonContainerWidth - x(0.5 * pooledStd);
+            } else {
+              return x(0.8 * pooledStd) - x(0.5 * pooledStd);
+            }
+          })
+          .attr("height", comparisonContainerHeight / 2)
+          .attr("y", comparisonContainerHeight / 4)
+          .attr("fill", d3.schemeYlGnBu[4][2])
+          .attr("pooled", d => d.pooledStd)
+          .attr("diff", d => d.trueMeanDiff);
+
+        comparisonContainer
+          .append("rect")
+          .classed("largesizeright", true)
+          .attr("x", x(0.8 * pooledStd) - 1)
+          .attr("width", () => {
+            console.log(pooledStd);
+            if (comparisonContainerWidth - x(0.8 * pooledStd) < 0) {
+              return 0;
+            } else {
+              return comparisonContainerWidth - x(0.8 * pooledStd);
+            }
+          })
+          .attr("height", comparisonContainerHeight / 2)
+          .attr("y", comparisonContainerHeight / 4)
+          .attr("fill", d3.schemeYlGnBu[4][3])
+          .attr("pooled", d => d.pooledStd)
+          .attr("diff", d => d.trueMeanDiff);
+
+        const g = comparisonContainer
+          .selectAll("g.ci")
           .data([{ lowerCI, upperCI }])
-          .join("rect")
-          .classed("ci", true)
-          .attr("fill-opacity", 0.3)
-          .each(function({ lowerCI, upperCI }) {
-            const rect = d3.select(this);
-            const xPos = lowerCI < 0 ? 0 : x(lowerCI);
-            rect
-              .attr("x", xPos)
-              .attr(
-                "width",
-                x(upperCI) > comparisonContainerWidth
-                  ? comparisonContainerWidth - xPos
-                  : x(upperCI) - xPos
-              )
-              .attr("height", comparisonContainerHeight);
-            console.log(lowerCI, upperCI);
-          });
+          .join("g")
+          .classed("ci", true);
+
+        g.each(function({ lowerCI, upperCI }) {
+          const rect = d3.select(this).append("rect");
+          const text = d3.select(this).append("text");
+          const xPos = lowerCI < 0 ? 0 : x(lowerCI);
+          const rectWidth =
+            x(upperCI) > comparisonContainerWidth
+              ? comparisonContainerWidth - xPos
+              : x(upperCI) - xPos;
+
+          const tag = term1[0].group + " x " + term2[0].group;
+          rect
+            .attr("fill", "white")
+            .attr("stroke", "black")
+            .attr("fill-opacity", 1)
+            .attr("x", xPos)
+            .attr("width", rectWidth)
+            .attr("height", comparisonContainerHeight);
+
+          text
+            .attr("x", xPos + rectWidth / 2)
+            .attr("y", comparisonContainerHeight / 2)
+            .attr("alignment-baseline", "middle")
+            .attr("text-anchor", "middle")
+            .text(tag);
+        });
       });
     console.log(means);
   });
@@ -474,33 +567,3 @@ d3.csv("../data/dadosAnderson.csv", cleanData).then(data => {
   }
   */
 });
-
-function aggregate(objects, key) {
-  const dict = {};
-  const levels = [...new Set(objects.map(d => d[key]))];
-
-  for (let object of objects) {
-    if (!dict.hasOwnProperty(object[key])) dict[object[key]] = [];
-    dict[object[key]].push(object);
-  }
-  const data = [];
-  for (let level of levels) {
-    data.push({
-      [key]: level,
-      data: dict[level]
-    });
-  }
-  return data;
-}
-
-function random(max) {
-  min = 0;
-  max = Math.floor(max) - 1;
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function getPooledStd(arr1, arr2) {
-  const std1 = d3.deviation(arr1);
-  const std2 = d3.deviation(arr2);
-  return Math.sqrt((std1 * std1 + std2 * std2) / 2);
-}
