@@ -1,19 +1,80 @@
-d3.csv("../data/dadosAnderson.csv", function(d) {
-  return {
-    ambiente: d["Ambiente"],
-    participante: +d["Participante"].slice(7),
-    tarefa: +d["Tarefa"],
-    tempo: +d["Duracao_Tarefa"] / 1000,
-    correto: d["Acertou_tarefa"] === "TRUE"
-  };
-}).then(data => {
-  const hierarchy = aggregate(data, "tarefa").sort();
+import { cleanData } from "./utils.js";
+/* global d3 */
+
+d3.csv("../data/dadosAnderson.csv", cleanData).then(data => {
+  console.log(data);
+  const width = 300;
+  const height = 1000;
+  const margin = { top: 10, left: 10, right: 10, bottom: 10 };
+  const innerWidth = width - margin.left - margin.right;
+  const innerHeight = height - margin.top - margin.bottom;
+
+  const plot = d3
+    .select("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  const rootContainerPad = 15;
+  const rootContainerWidth = innerWidth;
+  const rootContainerHeight = innerHeight / 13 - rootContainerPad;
+
+  const rootContainer = plot
+    .selectAll("g.rootContainer")
+    .data(
+      [1, 3, 2, 5, 4, 6, 7, 8, 9, 10, 11, 12, 13].map(d =>
+        data.filter(e => e.task === d)
+      )
+    )
+    .join("g")
+    .attr(
+      "transform",
+      (_, i) => `translate(0,${i * (rootContainerHeight + rootContainerPad)})`
+    );
+
+  rootContainer
+    .append("rect")
+    .attr("width", rootContainerWidth)
+    .attr("height", rootContainerHeight)
+    .attr("fill", "none")
+    .attr("stroke", "black");
+
+  const comparisonContainerWidth = rootContainerWidth;
+  const comparisonContainerHeight = rootContainerHeight / 3;
+  const comparisonContainer = rootContainer
+    .selectAll("g.comparisonContainer")
+    .data(taskArr =>
+      ["A,B", "B,C", "A,C"].map(tag => {
+        const [term1, term2] = tag.split(",");
+        return {
+          term1: taskArr.filter(e => e.group === term1),
+          term2: taskArr.filter(e => e.group === term2)
+        };
+      })
+    )
+    .join("g")
+    .attr(
+      "transform",
+      (_, i) => `translate(0,${i * comparisonContainerHeight})`
+    )
+    .classed("comparisonContainer", true);
+
+  comparisonContainer
+    .append("rect")
+    .attr("width", comparisonContainerWidth)
+    .attr("height", comparisonContainerHeight)
+    .attr("fill", "none")
+    .attr("stroke", "black");
+  /*
+  const hierarchy = aggregate(data, "task").sort();
+  console.log(hierarchy);
   hierarchy.forEach(node => {
-    node.data = aggregate(node.data, "ambiente").sort(function(a, b) {
-      if (a.ambiente < b.ambiente) {
+    node.data = aggregate(node.data, "group").sort(function(a, b) {
+      if (a.group < b.group) {
         return -1;
       }
-      if (a.ambiente > b.ambiente) {
+      if (a.group > b.group) {
         return 1;
       }
       return 0;
@@ -25,7 +86,7 @@ d3.csv("../data/dadosAnderson.csv", function(d) {
   const bootstatistic = (arr1, arr2) => d3.mean(arr2) - d3.mean(arr1);
 
   for (let taskData of hierarchy) {
-    const tarefa = taskData.tarefa;
+    const task = taskData.task;
     const scenarioData = taskData.data;
     for (let i = 0; i < scenarioData.length; i++) {
       for (let k = i + 1; k < scenarioData.length; k++) {
@@ -33,11 +94,11 @@ d3.csv("../data/dadosAnderson.csv", function(d) {
         const g2 = scenarioData[k].data.map(d => d["tempo"]);
 
         console.log(
-          `comparando ambiente ${scenarioData[i].ambiente} com ${scenarioData[k].ambiente} na tarefa ${tarefa}`
+          `comparando ambiente ${scenarioData[i].group} com ${scenarioData[k].group} na tarefa ${task}`
         );
-        console.log(`media ${scenarioData[i].ambiente}: ${d3.mean(g1)}`);
-        console.log(`media ${scenarioData[k].ambiente}: ${d3.mean(g2)}`);
-        const pair = scenarioData[i].ambiente + "-" + scenarioData[k].ambiente;
+        console.log(`media ${scenarioData[i].group}: ${d3.mean(g1)}`);
+        console.log(`media ${scenarioData[k].group}: ${d3.mean(g2)}`);
+        const pair = scenarioData[i].group + "-" + scenarioData[k].group;
         console.log(pair);
 
         let bootvalues = [];
@@ -67,7 +128,7 @@ d3.csv("../data/dadosAnderson.csv", function(d) {
         const pooledStd = getPooledStd(g1, g2);
         comparisonData.push({
           pair,
-          tarefa,
+          task,
           low95,
           up95,
           low50,
@@ -82,7 +143,7 @@ d3.csv("../data/dadosAnderson.csv", function(d) {
 
   console.log(comparisonData);
 
-  for (let tarefa = 1; tarefa <= 13; tarefa++) {
+  for (let task = 1; task <= 13; task++) {
     const width = 400;
     const height = 200;
     const margin = { top: 20, bottom: 30, right: 10, left: 50 };
@@ -90,7 +151,7 @@ d3.csv("../data/dadosAnderson.csv", function(d) {
     const innerHeight = height - margin.top - margin.bottom;
 
     const containerHeight = innerHeight / 3;
-    const data = comparisonData.filter(d => d.tarefa === tarefa);
+    const data = comparisonData.filter(d => d.task === task);
     const svg = d3
       .select("body")
       .append("svg")
@@ -127,7 +188,7 @@ d3.csv("../data/dadosAnderson.csv", function(d) {
       .attr("y", -3)
       .attr("text-anchor", "middle")
       .attr("alignment-baseline", "baseline")
-      .text(`Task ${tarefa}`);
+      .text(`Task ${task}`);
 
     const order = ["A-B", "B-C", "A-C"];
     const container = svg
@@ -344,17 +405,19 @@ d3.csv("../data/dadosAnderson.csv", function(d) {
       .attr("text-anchor", "end")
       .text(d => d.pair);
   }
+  */
 });
 
 function aggregate(objects, key) {
   const dict = {};
   const levels = [...new Set(objects.map(d => d[key]))];
+
   for (let object of objects) {
     if (!dict.hasOwnProperty(object[key])) dict[object[key]] = [];
     dict[object[key]].push(object);
   }
   const data = [];
-  for (level of levels) {
+  for (let level of levels) {
     data.push({
       [key]: level,
       data: dict[level]
