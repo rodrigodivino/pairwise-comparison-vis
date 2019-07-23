@@ -20,7 +20,7 @@ d3.csv("../data/dadosAnderson.csv", cleanData).then(data => {
   const rootContainerWidth = innerWidth;
   const rootContainerHeight = innerHeight / 13 - rootContainerPad;
 
-  const rootContainer = plot
+  const rootContainers = plot
     .selectAll("g.rootContainer")
     .data(
       [1, 3, 2, 5, 4, 6, 7, 8, 9, 10, 11, 12, 13].map(d =>
@@ -33,7 +33,7 @@ d3.csv("../data/dadosAnderson.csv", cleanData).then(data => {
       (_, i) => `translate(0,${i * (rootContainerHeight + rootContainerPad)})`
     );
 
-  rootContainer
+  rootContainers
     .append("rect")
     .attr("width", rootContainerWidth)
     .attr("height", rootContainerHeight)
@@ -42,7 +42,7 @@ d3.csv("../data/dadosAnderson.csv", cleanData).then(data => {
 
   const comparisonContainerWidth = rootContainerWidth;
   const comparisonContainerHeight = rootContainerHeight / 3;
-  const comparisonContainer = rootContainer
+  const comparisonContainers = rootContainers
     .selectAll("g.comparisonContainer")
     .data(taskArr =>
       ["A,B", "B,C", "A,C"].map(tag => {
@@ -60,14 +60,14 @@ d3.csv("../data/dadosAnderson.csv", cleanData).then(data => {
     )
     .classed("comparisonContainer", true);
 
-  comparisonContainer
+  comparisonContainers
     .append("rect")
     .attr("width", comparisonContainerWidth)
     .attr("height", comparisonContainerHeight)
     .attr("fill", "none")
     .attr("stroke", "black");
 
-  comparisonContainer.each(function({ term1, term2 }) {
+  comparisonContainers.each(function({ term1, term2 }) {
     const arr1 = term1.map(d => d["duration"]);
     const arr2 = term2.map(d => d["duration"]);
 
@@ -76,6 +76,63 @@ d3.csv("../data/dadosAnderson.csv", cleanData).then(data => {
     d3.select(this).attr("lowerCI", comp.ci[0]);
     d3.select(this).attr("upperCI", comp.ci[1]);
   });
+
+  rootContainers.each(function(rootData) {
+    const rootContainer = d3.select(this);
+    const means = [];
+    rootContainer.selectAll("g.comparisonContainer").each(function() {
+      means.push(parseFloat(d3.select(this).attr("meanDiff")));
+    });
+
+    const maxMean = d3.max(means, Math.abs);
+    const x = d3
+      .scaleLinear()
+      .domain([-maxMean, maxMean])
+      .range([0, comparisonContainerWidth]);
+
+    rootContainer
+      .append("line")
+      .classed("zero", true)
+      .attr("x1", x(0))
+      .attr("x2", x(0))
+      .attr("y1", 0)
+      .attr("y2", rootContainerHeight)
+      .attr("stroke", "black")
+      .attr("stroke-width", 1)
+      .attr("stroke-dasharray", 2);
+
+    rootContainer
+      .selectAll("g.comparisonContainer")
+      .each(function({ term1, term2 }) {
+        const comparisonContainer = d3.select(this);
+        const mean = parseFloat(comparisonContainer.attr("meanDiff"));
+        const lowerCI = parseFloat(comparisonContainer.attr("lowerCI"));
+        const upperCI = parseFloat(comparisonContainer.attr("upperCI"));
+
+        comparisonContainer
+          .selectAll("rect.ci")
+          .data([{ lowerCI, upperCI }])
+          .join("rect")
+          .classed("ci", true)
+          .attr("fill-opacity", 0.3)
+          .each(function({ lowerCI, upperCI }) {
+            const rect = d3.select(this);
+            const xPos = lowerCI < 0 ? 0 : x(lowerCI);
+            rect
+              .attr("x", xPos)
+              .attr(
+                "width",
+                x(upperCI) > comparisonContainerWidth
+                  ? comparisonContainerWidth - xPos
+                  : x(upperCI) - xPos
+              )
+              .attr("height", comparisonContainerHeight);
+            console.log(lowerCI, upperCI);
+          });
+      });
+    console.log(means);
+  });
+
   /*
   const hierarchy = aggregate(data, "task").sort();
   console.log(hierarchy);
