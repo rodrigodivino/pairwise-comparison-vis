@@ -37,7 +37,7 @@ d3.csv("../data/dadosAnderson.csv", cleanData).then(data => {
     .attr("width", rootContainerWidth)
     .attr("height", rootContainerHeight)
     .attr("fill", "none")
-    .attr("stroke", "none");
+    .attr("stroke", "black");
 
   const comparisonContainerWidth = rootContainerWidth;
   const comparisonContainerHeight = rootContainerHeight / 3;
@@ -64,7 +64,7 @@ d3.csv("../data/dadosAnderson.csv", cleanData).then(data => {
     .attr("width", comparisonContainerWidth)
     .attr("height", comparisonContainerHeight)
     .attr("fill", "none")
-    .attr("stroke", "black");
+    .attr("stroke", "none");
 
   comparisonContainers.each(function({ term1, term2 }) {
     const arr1 = term1.map(d => d["duration"]);
@@ -78,15 +78,18 @@ d3.csv("../data/dadosAnderson.csv", cleanData).then(data => {
 
   rootContainers.each(function() {
     const rootContainer = d3.select(this);
-    const means = [];
+    const minAbsCis = [];
     rootContainer.selectAll("g.comparisonContainer").each(function() {
-      means.push(parseFloat(d3.select(this).attr("meanDiff")));
+      const lowerCI = Math.abs(parseFloat(d3.select(this).attr("lowerCI")));
+      const upperCI = Math.abs(parseFloat(d3.select(this).attr("upperCI")));
+      const minAbsCI = d3.min([lowerCI, upperCI]);
+      minAbsCis.push(minAbsCI);
     });
 
-    const maxMean = d3.max(means, Math.abs);
+    const maxCloserCi = d3.max(minAbsCis, Math.abs);
     const x = d3
       .scaleLinear()
-      .domain([-maxMean, maxMean])
+      .domain([-maxCloserCi * 1.4, maxCloserCi * 1.4])
       .range([0, comparisonContainerWidth]);
 
     rootContainer
@@ -98,7 +101,7 @@ d3.csv("../data/dadosAnderson.csv", cleanData).then(data => {
       .attr("y2", rootContainerHeight)
       .attr("stroke", "black")
       .attr("stroke-width", 1)
-      .attr("stroke-dasharray", 2);
+      .attr("stroke-dasharray", 0);
 
     rootContainer
       .selectAll("g.comparisonContainer")
@@ -333,25 +336,26 @@ d3.csv("../data/dadosAnderson.csv", cleanData).then(data => {
           blocker1
             .attr("fill", "white")
             .attr("stroke", "none")
-            .attr("height", comparisonContainerHeight)
+            .attr("y", 1)
+            .attr("height", comparisonContainerHeight - 2)
             .attr("x", function() {
               if (Math.sign(upperCI) !== Math.sign(lowerCI)) {
-                return x(upperCI);
+                return x(upperCI) + 1;
               } else if (upperCI < 0) {
-                return x(0);
+                return x(0) + 1;
               } else {
-                return x(upperCI);
+                return x(upperCI) + 1;
               }
             })
             .attr("width", function() {
               if (Math.sign(upperCI) !== Math.sign(lowerCI)) {
                 const width = comparisonContainerWidth - x(upperCI);
-                return width < 0 ? 0 : width;
+                return (width < 0 ? 0 : width) - 2;
               } else if (upperCI < 0) {
-                return comparisonContainerWidth - x(0);
+                return comparisonContainerWidth - x(0) - 2;
               } else {
                 const width = comparisonContainerWidth - x(upperCI);
-                return width > 0 ? width : 0;
+                return (width > 0 ? width : 0) - 2;
               }
             });
 
@@ -359,25 +363,26 @@ d3.csv("../data/dadosAnderson.csv", cleanData).then(data => {
             .attr("fill", "white")
             .attr("stroke", "none")
             .classed("blocker2", true)
-            .attr("height", comparisonContainerHeight)
+            .attr("y", 1)
+            .attr("height", comparisonContainerHeight - 2)
             .attr("x", function() {
               if (Math.sign(upperCI) !== Math.sign(lowerCI)) {
-                return 0;
+                return 0 + 0.5;
               } else if (lowerCI > 0) {
-                return 0;
+                return 0 + 0.5;
               } else {
-                return 0;
+                return 0 + 0.5;
               }
             })
             .attr("width", function() {
               if (Math.sign(upperCI) !== Math.sign(lowerCI)) {
                 const width = x(lowerCI) < 0 ? 0 : x(lowerCI);
                 console.log(width);
-                return width < 0 ? 0 : width;
+                return (width < 0 ? 0 : width) - 1;
               } else if (lowerCI > 0) {
-                return x(0);
+                return x(0) - 1;
               } else {
-                return x(lowerCI);
+                return x(lowerCI) - 1;
               }
             });
 
