@@ -78,15 +78,22 @@ d3.csv("../data/dadosAnderson.csv", cleanData).then(data => {
 
   rootContainers.each(function() {
     const rootContainer = d3.select(this);
-    const minAbsCis = [];
+    let minValidAbsCis = [];
+    const fallBackForNonValids = [];
     rootContainer.selectAll("g.comparisonContainer").each(function() {
-      const lowerCI = Math.abs(parseFloat(d3.select(this).attr("lowerCI")));
-      const upperCI = Math.abs(parseFloat(d3.select(this).attr("upperCI")));
-      const minAbsCI = d3.min([lowerCI, upperCI]);
-      minAbsCis.push(minAbsCI);
+      const lowerCI = parseFloat(d3.select(this).attr("lowerCI"));
+      const upperCI = parseFloat(d3.select(this).attr("upperCI"));
+      const minAbsCI = d3.min([Math.abs(lowerCI), Math.abs(upperCI)]);
+      if (Math.sign(lowerCI) === Math.sign(upperCI)) {
+        minValidAbsCis.push(minAbsCI);
+      }
+      fallBackForNonValids.push(minAbsCI);
     });
 
-    const maxCloserCi = d3.max(minAbsCis, Math.abs);
+    if (minValidAbsCis.length === 0) {
+      minValidAbsCis = fallBackForNonValids;
+    }
+    const maxCloserCi = d3.max(minValidAbsCis, Math.abs);
     const x = d3
       .scaleLinear()
       .domain([-maxCloserCi * 1.4, maxCloserCi * 1.4])
@@ -340,22 +347,22 @@ d3.csv("../data/dadosAnderson.csv", cleanData).then(data => {
             .attr("height", comparisonContainerHeight - 2)
             .attr("x", function() {
               if (Math.sign(upperCI) !== Math.sign(lowerCI)) {
-                return x(upperCI) + 1;
+                return x(upperCI) + 0.5;
               } else if (upperCI < 0) {
-                return x(0) + 1;
+                return x(0) + 0.5;
               } else {
-                return x(upperCI) + 1;
+                return x(upperCI) + 0.5;
               }
             })
             .attr("width", function() {
               if (Math.sign(upperCI) !== Math.sign(lowerCI)) {
                 const width = comparisonContainerWidth - x(upperCI);
-                return (width < 0 ? 0 : width) - 2;
+                return (width < 0 ? 0 : width) - 1;
               } else if (upperCI < 0) {
-                return comparisonContainerWidth - x(0) - 2;
+                return comparisonContainerWidth - x(0) - 1;
               } else {
                 const width = comparisonContainerWidth - x(upperCI);
-                return (width > 0 ? width : 0) - 2;
+                return (width > 0 ? width : 0) - 1;
               }
             });
 
