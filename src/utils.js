@@ -62,6 +62,23 @@ function getPooledStd(arr1, arr2) {
   return Math.sqrt((std1 * std1 + std2 * std2) / 2);
 }
 
+function permuteTags(tagArray) {
+  const permuted = [];
+  for (let separator = 1; separator < tagArray.length; separator++) {
+    for (let i = 0; i + separator < tagArray.length; i++) {
+      permuted.push(tagArray[i] + "," + tagArray[i + separator]);
+    }
+  }
+  return permuted;
+}
+
 window.getCI = getCI;
 
-export { cleanData, sortByBool, getCI, bootComparison, getPooledStd };
+export {
+  permuteTags,
+  cleanData,
+  sortByBool,
+  getCI,
+  bootComparison,
+  getPooledStd
+};

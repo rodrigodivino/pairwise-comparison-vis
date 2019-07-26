@@ -1,13 +1,8 @@
 /*global d3*/
-import { bootComparison, getPooledStd } from "./utils.js";
+import { bootComparison, getPooledStd, permuteTags } from "./utils.js";
 
 function draw(data, tasks, groups) {
-  const groupsPermut = [];
-  for (let separator = 1; separator < groups.length; separator++) {
-    for (let i = 0; i + separator < groups.length; i++) {
-      groupsPermut.push(groups[i] + "," + groups[i + separator]);
-    }
-  }
+  const groupsPermut = permuteTags(groups);
 
   const width = 400;
   const height = 2000;
