@@ -1,7 +1,14 @@
 /*global d3*/
 import { bootComparison, getPooledStd } from "./utils.js";
 
-function draw(data) {
+function draw(data, tasks, groups) {
+  const groupsPermut = [];
+  for (let separator = 1; separator < groups.length; separator++) {
+    for (let i = 0; i + separator < groups.length; i++) {
+      groupsPermut.push(groups[i] + "," + groups[i + separator]);
+    }
+  }
+
   const width = 400;
   const height = 2000;
   const margin = { top: 30, left: 60, right: 30, bottom: 10 };
@@ -17,15 +24,11 @@ function draw(data) {
 
   const rootContainerPad = 50;
   const rootContainerWidth = innerWidth;
-  const rootContainerHeight = innerHeight / 13 - rootContainerPad;
+  const rootContainerHeight = innerHeight / tasks.length - rootContainerPad;
 
   const rootContainers = plot
     .selectAll("g.rootContainer")
-    .data(
-      [1, 3, 2, 5, 4, 6, 7, 8, 9, 10, 11, 12, 13].map(d =>
-        data.filter(e => e.task === d)
-      )
-    )
+    .data(tasks.map(d => data.filter(e => e.task === d)))
     .join("g")
     .attr(
       "transform",
@@ -50,11 +53,11 @@ function draw(data) {
     .text(arr => "T" + arr[0].task);
 
   const comparisonContainerWidth = rootContainerWidth;
-  const comparisonContainerHeight = rootContainerHeight / 3;
+  const comparisonContainerHeight = rootContainerHeight / groupsPermut.length;
   const comparisonContainers = rootContainers
     .selectAll("g.comparisonContainer")
     .data(taskArr =>
-      ["A,B", "B,C", "A,C"].map(tag => {
+      groupsPermut.map(tag => {
         const [term1, term2] = tag.split(",");
         return {
           term1: taskArr.filter(e => e.group === term1),
@@ -160,9 +163,13 @@ function draw(data) {
             if (x(0.2 * pooledStd) - x(0) < 0) {
               return 0;
             } else if (x(0.2 * pooledStd) > comparisonContainerWidth) {
-              return comparisonContainerWidth - x(0);
+              return comparisonContainerWidth - x(0) < 0
+                ? 0
+                : comparisonContainerWidth - x(0);
             } else {
-              return x(0.2 * pooledStd) - x(0);
+              return x(0.2 * pooledStd) - x(0) < 0
+                ? 0
+                : x(0.2 * pooledStd) - x(0);
             }
           })
           .attr("height", comparisonContainerHeight / 2)
@@ -189,9 +196,13 @@ function draw(data) {
             if (x(0.2 * pooledStd) - x(0) < 0) {
               return 0;
             } else if (x(0.2 * pooledStd) > comparisonContainerWidth) {
-              return comparisonContainerWidth - x(0);
+              return comparisonContainerWidth - x(0) < 0
+                ? 0
+                : comparisonContainerWidth - x(0);
             } else {
-              return x(0.2 * pooledStd) - x(0);
+              return x(0.2 * pooledStd) - x(0) < 0
+                ? 0
+                : x(0.2 * pooledStd) - x(0);
             }
           })
           .attr("height", comparisonContainerHeight / 2)
@@ -210,9 +221,13 @@ function draw(data) {
             if (x(0.5 * pooledStd) - x(0.2 * pooledStd) < 0) {
               return 0;
             } else if (x(0.5 * pooledStd) > comparisonContainerWidth) {
-              return comparisonContainerWidth - x(0.2 * pooledStd);
+              return comparisonContainerWidth - x(0.2 * pooledStd) < 0
+                ? 0
+                : comparisonContainerWidth - x(0.2 * pooledStd);
             } else {
-              return x(0.5 * pooledStd) - x(0.2 * pooledStd);
+              return x(0.5 * pooledStd) - x(0.2 * pooledStd) < 0
+                ? 0
+                : x(0.5 * pooledStd) - x(0.2 * pooledStd);
             }
           })
           .attr("height", comparisonContainerHeight / 2)
@@ -245,9 +260,13 @@ function draw(data) {
             if (x(0.5 * pooledStd) - x(0.2 * pooledStd) < 0) {
               return 0;
             } else if (x(0.5 * pooledStd) > comparisonContainerWidth) {
-              return comparisonContainerWidth - x(0.2 * pooledStd);
+              return comparisonContainerWidth - x(0.2 * pooledStd) < 0
+                ? 0
+                : comparisonContainerWidth - x(0.2 * pooledStd);
             } else {
-              return x(0.5 * pooledStd) - x(0.2 * pooledStd);
+              return x(0.5 * pooledStd) - x(0.2 * pooledStd) < 0
+                ? 0
+                : x(0.5 * pooledStd) - x(0.2 * pooledStd);
             }
           })
           .attr("height", comparisonContainerHeight / 2)
@@ -266,9 +285,13 @@ function draw(data) {
             if (x(0.8 * pooledStd) - x(0.5 * pooledStd) < 0) {
               return 0;
             } else if (x(0.8 * pooledStd) > comparisonContainerWidth) {
-              return comparisonContainerWidth - x(0.5 * pooledStd);
+              return comparisonContainerWidth - x(0.5 * pooledStd) < 0
+                ? 0
+                : comparisonContainerWidth - x(0.5 * pooledStd);
             } else {
-              return x(0.8 * pooledStd) - x(0.5 * pooledStd);
+              return x(0.8 * pooledStd) - x(0.5 * pooledStd) < 0
+                ? 0
+                : x(0.8 * pooledStd) - x(0.5 * pooledStd);
             }
           })
           .attr("height", comparisonContainerHeight / 2)
@@ -301,9 +324,13 @@ function draw(data) {
             if (x(0.8 * pooledStd) - x(0.5 * pooledStd) < 0) {
               return 0;
             } else if (x(0.8 * pooledStd) > comparisonContainerWidth) {
-              return comparisonContainerWidth - x(0.5 * pooledStd);
+              return comparisonContainerWidth - x(0.5 * pooledStd) < 0
+                ? 0
+                : comparisonContainerWidth - x(0.5 * pooledStd);
             } else {
-              return x(0.8 * pooledStd) - x(0.5 * pooledStd);
+              return x(0.8 * pooledStd) - x(0.5 * pooledStd) < 0
+                ? 0
+                : x(0.8 * pooledStd) - x(0.5 * pooledStd);
             }
           })
           .attr("height", comparisonContainerHeight / 2)
@@ -322,7 +349,9 @@ function draw(data) {
             if (comparisonContainerWidth - x(0.8 * pooledStd) < 0) {
               return 0;
             } else {
-              return comparisonContainerWidth - x(0.8 * pooledStd);
+              return comparisonContainerWidth - x(0.8 * pooledStd) < 0
+                ? 0
+                : comparisonContainerWidth - x(0.8 * pooledStd);
             }
           })
           .attr("height", comparisonContainerHeight / 2)
@@ -350,7 +379,9 @@ function draw(data) {
             if (comparisonContainerWidth - x(0.8 * pooledStd) < 0) {
               return 0;
             } else {
-              return comparisonContainerWidth - x(0.8 * pooledStd);
+              return comparisonContainerWidth - x(0.8 * pooledStd) < 0
+                ? 0
+                : comparisonContainerWidth - x(0.8 * pooledStd);
             }
           })
           .attr("height", comparisonContainerHeight / 2)
@@ -482,12 +513,11 @@ function draw(data) {
             .attr("width", function() {
               if (Math.sign(upperCI) !== Math.sign(lowerCI)) {
                 const width = x(lowerCI) < 0 ? 0 : x(lowerCI);
-                console.log(width);
                 return width < 0 ? 0 : width;
               } else if (lowerCI > 0) {
-                return x(0);
+                return x(0) < 0 ? 0 : x(0);
               } else {
-                return x(lowerCI);
+                return x(lowerCI) < 0 ? 0 : x(lowerCI);
               }
             });
 
